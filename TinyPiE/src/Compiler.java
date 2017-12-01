@@ -15,7 +15,13 @@ public class Compiler extends CompilerBase {
 			emitPUSH(REG_R1);
 			emitRR("mov", REG_R1, REG_DST);
 			compileExpr(nd.rhs, env);
-			if (nd.op.equals("+"))
+//ここから演習５
+			if (nd.op.equals("|"))
+				emitRR("orr", REG_DST, REG_R1);
+			else if (nd.op.equals("&"))
+				emitRR("and", REG_DST, REG_R1);
+//ここまで
+			else if (nd.op.equals("+"))
 				emitRRR("add", REG_DST, REG_R1, REG_DST);
 			else if (nd.op.equals("-"))
 				emitRRR("sub", REG_DST, REG_R1, REG_DST);
@@ -26,6 +32,32 @@ public class Compiler extends CompilerBase {
 			else
 				throw new Error("Unknown operator: "+nd.op);
 			emitPOP(REG_R1);
+//ここから演習５
+		} else if (ndx instanceof ASTUnaryExprNode) {
+			ASTUnaryExprNode nd = (ASTUnaryExprNode) ndx;
+			Variable var = env.lookup(nd.operand);
+			if (nd.op.equals("~")) {
+				if (var != null) {
+					GlobalVariable globalVar = (GlobalVariable) var;
+					emitLDC(REG_DST, globalVar.getLabel());
+					emitLDR(REG_DST, REG_DST, 0);
+					emitRR("mvn", REG_DST, REG_DST);
+				} else {
+					emitLDC(REG_DST, Integer.parseInt(nd.operand));
+					emitRR("mvn", REG_DST, REG_DST);
+				}
+			} else if (nd.op.equals("-")) {
+				if (var != null) {
+					GlobalVariable globalVar = (GlobalVariable) var;
+					emitLDC(REG_DST, globalVar.getLabel());
+					emitLDR(REG_DST, REG_DST, 0);
+					emitRR("mvn", REG_DST, REG_DST);
+					emitRRI("add", REG_DST, REG_DST, 1);
+				} else {
+					emitLDC(REG_DST, 0 - Integer.parseInt(nd.operand));
+				}
+			}
+//ここまで
 		} else if (ndx instanceof ASTNumberNode) {
 			ASTNumberNode nd = (ASTNumberNode) ndx;
 			emitLDC(REG_DST, nd.value);
@@ -64,7 +96,7 @@ public class Compiler extends CompilerBase {
 		System.out.println("\t@ 式をコンパイルした命令列");
 		compileExpr(ast, env);
 		System.out.println("\t@ EXITシステムコール");
-		emitRR("mov", "r7", "#1");								// EXITのシステムコール番号
+		emitRI("mov", "r7", 1);								// EXITのシステムコール番号
 		emitI("swi", 0);
 	}
 
