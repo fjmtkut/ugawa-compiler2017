@@ -44,7 +44,27 @@ public class Compiler extends CompilerBase {
 	}
 	
 	void compile(ASTNode ast) {
-		throw new Error("not implemented");
+		Environment env = new Environment();
+		GlobalVariable vx = addGlobalVariable(env, "x");
+		GlobalVariable vy = addGlobalVariable(env, "y");
+		GlobalVariable vz = addGlobalVariable(env, "z");
+		
+		System.out.println("\t.section .data");
+		System.out.println("\t@ 大域変数の定義");
+		emitLabel(vx.getLabel());
+		System.out.println("\t.word 1");
+		emitLabel(vy.getLabel());
+		System.out.println("\t.word 10");
+		emitLabel(vz.getLabel());
+		System.out.println("\t.word -1");
+		System.out.println("\t.section .text");
+		System.out.println("\t.global _start");
+		System.out.println("\t_start:");
+		System.out.println("\t@ 式をコンパイルした命令列");
+		compileExpr(ast, env);
+		System.out.println("\t@ EXITシステムコール");
+		emitRR("mov", "r7", "#1");								// EXITのシステムコール番号
+		emitI("swi", 0);
 	}
 
 	public static void main(String[] args) throws IOException {
