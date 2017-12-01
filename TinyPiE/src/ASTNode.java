@@ -1,5 +1,20 @@
 public class ASTNode {}
 
+//ここから演習３
+class ASTUnaryExprNode extends ASTNode {
+	String op;
+	String operand;
+	ASTUnaryExprNode(String op, String operand) {
+		this.op = op;
+		this.operand = operand;
+	}
+//ここまで
+	
+	public String toString() {
+		return "(UnExpr " +op+ " " +operand+ ")";
+	}
+}
+
 class ASTBinaryExprNode extends ASTNode {
 	String op;
 	ASTNode lhs;
