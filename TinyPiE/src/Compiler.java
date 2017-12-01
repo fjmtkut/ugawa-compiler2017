@@ -28,6 +28,7 @@ public class Compiler extends CompilerBase {
 			emitPOP(REG_R1);
 		} else if (ndx instanceof ASTNumberNode) {
 			ASTNumberNode nd = (ASTNumberNode) ndx;
+			emitLDC(REG_DST, nd.value);
 		} else if (ndx instanceof ASTVarRefNode) {
 			ASTVarRefNode nd = (ASTVarRefNode) ndx;
 			Variable var = env.lookup(nd.varName);
@@ -59,7 +60,7 @@ public class Compiler extends CompilerBase {
 		System.out.println("\t.word -1");
 		System.out.println("\t.section .text");
 		System.out.println("\t.global _start");
-		System.out.println("\t_start:");
+		System.out.println("_start:");
 		System.out.println("\t@ 式をコンパイルした命令列");
 		compileExpr(ast, env);
 		System.out.println("\t@ EXITシステムコール");
