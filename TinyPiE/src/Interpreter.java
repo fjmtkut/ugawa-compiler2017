@@ -40,9 +40,9 @@ public class Interpreter extends InterpreterBase {
 				operand = Integer.parseInt(nd.operand);
 			}
 			if (nd.op.equals("~")) {
-				return ((-1) - operand);
+				return ~ operand;
 			} else if (nd.op.equals("-")) {			
-				return (0 - operand);
+				return - operand;
 			}
 			throw new Error("Undefined variable: "+nd.op+nd.operand);
 //ここまで
