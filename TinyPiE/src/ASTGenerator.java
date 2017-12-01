@@ -39,7 +39,12 @@ public class ASTGenerator {
 				return translateExpr(ctx.mulExpr());
 			ASTNode lhs = translateExpr(ctx.addExpr());
 			ASTNode rhs = translateExpr(ctx.mulExpr());
-			return new ASTBinaryExprNode(ctx.ADDOP().getText(), lhs, rhs);
+//ここから変更点
+			if (ctx.ADDOP() != null)
+				return new ASTBinaryExprNode(ctx.ADDOP().getText(), lhs, rhs);
+			else if (ctx.SUBOP() != null)
+				return new ASTBinaryExprNode(ctx.SUBOP().getText(), lhs, rhs);
+//ここまで
 		} else if (ctxx instanceof MulExprContext) {
 			MulExprContext ctx = (MulExprContext) ctxx;
 			if (ctx.mulExpr() == null)
