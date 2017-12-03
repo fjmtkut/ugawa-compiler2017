@@ -9,7 +9,6 @@ import parser.TinyPiSParser.CompoundStmtContext;
 import parser.TinyPiSParser.AssignStmtContext;
 import parser.TinyPiSParser.IfStmtContext;
 import parser.TinyPiSParser.WhileStmtContext;
-import parser.TinyPiSParser.VarDeclsContext;
 //ここまで
 
 import parser.TinyPiSParser.AndExprContext;
