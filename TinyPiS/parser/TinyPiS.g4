@@ -12,7 +12,7 @@ stmt: '{' stmt* '}'                             # compoundStmt
         ;
 
 
-expr: addExpr
+expr: orExpr
       ;
 
 orExpr: orExpr OROP andExpr
