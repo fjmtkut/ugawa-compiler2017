@@ -60,7 +60,12 @@ public class Compiler extends CompilerBase {
 	
 	void compileStmt(ASTNode ndx, Environment env) {
 		if (ndx instanceof ASTCompoundStmtNode) {
-		//koko
+//ここから
+			ASTCompoundStmtNode nd = (ASTCompoundStmtNode) ndx;
+			for (int i = 0; i < nd.stmts.size(); i++){
+				compileStmt(nd.stmts.get(i), env);
+			}
+//ここまで
 		} else if (ndx instanceof ASTAssignStmtNode) {
 			ASTAssignStmtNode nd = (ASTAssignStmtNode) ndx;
 			Variable var = env.lookup(nd.var);
@@ -86,10 +91,21 @@ public class Compiler extends CompilerBase {
 			compileStmt(nd.elseClause, env);
 			emitLabel(endLabel);
 		} else if (ndx instanceof ASTWhileStmtNode) {
-		//koko
+//ここから
+			ASTWhileStmtNode nd = (ASTWhileStmtNode) ndx;
+			compileExpr(nd.cond, env);
+			String loop = freshLabel();
+			String endloop = freshLabel();
+			emitLabel(loop);
+			emitRI("cmp", REG_DST, 0);
+			emitJMP("beq", endloop);
+			compileStmt(nd.stmt, env);
+			emitJMP("b", loop);
+			emitLabel(endloop);
+//ここまで
 		} else
-		throw new Error("Unknown expression: "+ndx);
-		}
+			throw new Error("Unknown expression: "+ndx);
+	}
 	
 	void compile(ASTNode ast) {
 		Environment env = new Environment();
