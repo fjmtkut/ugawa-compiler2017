@@ -4,8 +4,8 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
-import parser.TinyPiELexer;
-import parser.TinyPiEParser;
+import parser.TinyPiSLexer;
+import parser.TinyPiSParser;
 
 public class Compiler extends CompilerBase {
 	void compileExpr(ASTNode ndx, Environment env) {
@@ -70,9 +70,9 @@ public class Compiler extends CompilerBase {
 
 	public static void main(String[] args) throws IOException {
 		ANTLRInputStream input = new ANTLRInputStream(System.in);
-		TinyPiELexer lexer = new TinyPiELexer(input);
+		TinyPiSLexer lexer = new TinyPiSLexer(input);
 		CommonTokenStream token = new CommonTokenStream(lexer);
-		TinyPiEParser parser = new TinyPiEParser(token);
+		TinyPiSParser parser = new TinyPiSParser(token);
 		ParseTree tree = parser.expr();
 		ASTGenerator astgen = new ASTGenerator();
 		ASTNode ast = astgen.translate(tree);

@@ -4,17 +4,17 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
-import parser.TinyPiELexer;
-import parser.TinyPiEParser;
+import parser.TinyPiSLexer;
+import parser.TinyPiSParser;
 
 
 public class PrintAST {
 	public static void main(String[] args) throws IOException {
 		ANTLRInputStream input = new ANTLRInputStream(System.in);
-		TinyPiELexer lexer = new TinyPiELexer(input);
+		TinyPiSLexer lexer = new TinyPiSLexer(input);
 		CommonTokenStream token = new CommonTokenStream(lexer);
-        TinyPiEParser parser = new TinyPiEParser(token);
-        ParseTree tree = parser.expr();
+        TinyPiSParser parser = new TinyPiSParser(token);
+        ParseTree tree = parser.prog();
         ASTGenerator astgen = new ASTGenerator();
         ASTNode ast = astgen.translate(tree);
         System.out.println(ast);

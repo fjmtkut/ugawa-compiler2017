@@ -75,6 +75,18 @@ class ASTWhileStmtNode extends ASTNode {
 	}
 }
 
+class ASTUnaryExprNode extends ASTNode {
+	String op;
+	ASTNode operand;
+	ASTUnaryExprNode(String op, ASTNode operand) {
+		this.op = op;
+		this.operand = operand;
+	}
+	public String toString() {
+		return "(UnExpr " +op+ " " +operand+ ")";
+	}
+}
+
 class ASTBinaryExprNode extends ASTNode {
 	String op;
 	ASTNode lhs;
