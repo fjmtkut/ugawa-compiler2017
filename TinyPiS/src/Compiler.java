@@ -103,6 +103,12 @@ public class Compiler extends CompilerBase {
 			emitJMP("b", loop);
 			emitLabel(endloop);
 //ここまで
+//ここから演習13
+		} else if (ndx instanceof ASTPrintStmtNode) {
+			ASTPrintStmtNode nd = (ASTPrintStmtNode) ndx;
+			compileExpr(nd.expr, env);
+			emitCALL("print_func");
+//ここまで
 		} else
 			throw new Error("Unknown expression: "+ndx);
 	}
@@ -124,8 +130,49 @@ public class Compiler extends CompilerBase {
 			emitLabel(v.getLabel());
 			System.out.println("\t.word 0");
 		}
+		System.out.println("buf:\t.space 8\n\t.byte 10");
 		System.out.println("\t.section .text");
 		System.out.println("\t.global _start");
+//ここから演習13
+		System.out.println("print_func:");
+		String print_loop = freshLabel();
+		emitPUSH(REG_LR);
+		emitPUSH(REG_DST);
+		emitPUSH(REG_R1);
+		emitPUSH(REG_R2);
+		emitPUSH(REG_R3);
+		emitPUSH(REG_R7);
+		emitRRI("sub", "sp", "sp", 4);
+		emitLDC(REG_R1, "buf");
+		emitRRI("add", REG_R1, REG_R1, 8);
+		emitRI("mov", REG_R2, 4);
+		emitLabel(print_loop);
+		emitRRI("sub", REG_R1, REG_R1, 1);
+		emitRI("mov", REG_R7, 32);
+		emitRRR("sub", REG_R7, REG_R7, REG_R2);
+		System.out.println("\tmov r3, r0, lsl r7");
+		System.out.println("\tmov r3, r3, lsr #28");
+		emitRI("cmp", REG_R3, 9);
+		emitRRI("addls", REG_R3, REG_R3, 48);
+		emitRRI("addhi", REG_R3, REG_R3, 55);
+		emitRR("strb", REG_R3, "[r1]");
+		emitRRI("add", REG_R2, REG_R2, 4);
+		emitRI("cmp", REG_R2, 32);
+		System.out.println("\tbls " + print_loop);
+		emitRI("mov", REG_R7, 4);
+		emitRI("mov", REG_DST, 1);
+		emitLDC(REG_R1, "buf");
+		emitRI("mov", REG_R2, 9);
+		emitI("swi", 0);
+		emitRRI("add", "sp", "sp", 4);
+		emitPOP(REG_R7);
+		emitPOP(REG_R3);
+		emitPOP(REG_R2);
+		emitPOP(REG_R1);
+		emitPOP(REG_DST);
+		emitPOP(REG_LR);
+		emitRET();
+//ここまで
 		System.out.println("_start:");
 		System.out.println("\t@ 式をコンパイルした命令列");
 		compileStmt(prog.stmt, env);
