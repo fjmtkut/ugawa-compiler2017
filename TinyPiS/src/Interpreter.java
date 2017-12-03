@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -48,13 +49,48 @@ public class Interpreter extends InterpreterBase {
 			throw new Error("Unknown expression: "+ndx);
 		}
 	}
+	
+	void evalStmt(ASTNode ndx, Environment env) {
+		if (ndx instanceof ASTCompoundStmtNode) {
+			ASTCompoundStmtNode nd = (ASTCompoundStmtNode) ndx;
+			ArrayList<ASTNode> stmts = nd.stmts;
+			for (ASTNode child: stmts)
+				evalStmt(child, env);
+		} else if (ndx instanceof ASTAssignStmtNode) {
+			ASTAssignStmtNode nd = (ASTAssignStmtNode) ndx;
+			Variable var = env.lookup(nd.var);
+			if (var == null)
+				throw new Error("undefined variable: "+nd.var);
+			int value = evalExpr(nd.expr, env);
+			var.set(value);
+		} else if (ndx instanceof ASTIfStmtNode) {
+			ASTIfStmtNode nd = (ASTIfStmtNode) ndx;
+			if (evalExpr(nd.cond, env) != 0)
+				evalStmt(nd.thenClause, env);
+			else
+				evalStmt(nd.elseClause, env);
+		} else if (ndx instanceof ASTWhileStmtNode) {
+			ASTWhileStmtNode nd = (ASTWhileStmtNode) ndx;
+			while (evalExpr(nd.cond, env) != 0) {
+				evalStmt(nd.stmt, env);
+			}
+		} else
+			throw new Error("Unknown statement: "+ndx);
+	}
 
 	public int eval(ASTNode ast) {
 		Environment env = new Environment();
-		addGlobalVariable(env, "x", 1);
-		addGlobalVariable(env, "y", 10);
-		addGlobalVariable(env, "z", -1);		
-		return evalExpr(ast, env);
+		ASTProgNode prog = (ASTProgNode) ast;
+		for (String varName: prog.varDecls) {
+			if (env.lookup(varName) != null)
+				throw new Error("Variable redefined: "+varName);
+			addGlobalVariable(env, varName, 0);
+		}
+		if (env.lookup("answer") == null)
+			addGlobalVariable(env, "answer", 0);
+		evalStmt(prog.stmt, env);
+		Variable varAnswer = env.lookup("answer");
+		return varAnswer.get();
 	}
 
 	public static void main(String[] args) throws IOException {
@@ -62,7 +98,7 @@ public class Interpreter extends InterpreterBase {
 		TinyPiSLexer lexer = new TinyPiSLexer(input);
 		CommonTokenStream token = new CommonTokenStream(lexer);
         TinyPiSParser parser = new TinyPiSParser(token);
-        ParseTree tree = parser.expr();
+        ParseTree tree = parser.prog();
         ASTGenerator astgen = new ASTGenerator();
         ASTNode ast = astgen.translate(tree);
         Interpreter interp = new Interpreter();
