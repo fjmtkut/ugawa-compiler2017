@@ -58,27 +58,67 @@ public class Compiler extends CompilerBase {
 			throw new Error("Unknown expression: "+ndx);
 	}
 	
+	void compileStmt(ASTNode ndx, Environment env) {
+		if (ndx instanceof ASTCompoundStmtNode) {
+		//koko
+		} else if (ndx instanceof ASTAssignStmtNode) {
+			ASTAssignStmtNode nd = (ASTAssignStmtNode) ndx;
+			Variable var = env.lookup(nd.var);
+			if (var == null)
+				throw new Error("undefined variable: "+nd.var);
+			compileExpr(nd.expr, env);
+			if (var instanceof GlobalVariable) {
+				GlobalVariable globalVar = (GlobalVariable) var;
+				emitLDC(REG_R1, globalVar.getLabel());
+				emitSTR(REG_DST, REG_R1, 0);
+			} else
+				throw new Error("Not a global variable: "+nd.var);
+		} else if (ndx instanceof ASTIfStmtNode) {
+			ASTIfStmtNode nd = (ASTIfStmtNode) ndx;
+			String elseLabel = freshLabel();
+			String endLabel = freshLabel();
+			compileExpr(nd.cond, env);
+			emitRI("cmp", REG_DST, 0);
+			emitJMP("beq", elseLabel);
+			compileStmt(nd.thenClause, env);
+			emitJMP("b", endLabel);
+			emitLabel(elseLabel);
+			compileStmt(nd.elseClause, env);
+			emitLabel(endLabel);
+		} else if (ndx instanceof ASTWhileStmtNode) {
+		//koko
+		} else
+		throw new Error("Unknown expression: "+ndx);
+		}
+	
 	void compile(ASTNode ast) {
 		Environment env = new Environment();
-		GlobalVariable vx = addGlobalVariable(env, "x");
-		GlobalVariable vy = addGlobalVariable(env, "y");
-		GlobalVariable vz = addGlobalVariable(env, "z");
-
+		ASTProgNode prog = (ASTProgNode) ast;
 		System.out.println("\t.section .data");
 		System.out.println("\t@ 大域変数の定義");
-		emitLabel(vx.getLabel());
-		System.out.println("\t.word 1");
-		emitLabel(vy.getLabel());
-		System.out.println("\t.word 10");
-		emitLabel(vz.getLabel());
-		System.out.println("\t.word -1");
+		for (String varName: prog.varDecls) {
+			if (env.lookup(varName) != null)
+				throw new Error("Variable redefined: "+varName);
+			GlobalVariable v = addGlobalVariable(env, varName);
+			emitLabel(v.getLabel());
+			System.out.println("\t.word 0");
+		}
+		if (env.lookup("answer") == null) {
+			GlobalVariable v = addGlobalVariable(env, "answer");
+			emitLabel(v.getLabel());
+			System.out.println("\t.word 0");
+		}
 		System.out.println("\t.section .text");
 		System.out.println("\t.global _start");
 		System.out.println("_start:");
 		System.out.println("\t@ 式をコンパイルした命令列");
-		compileExpr(ast, env);
+		compileStmt(prog.stmt, env);
 		System.out.println("\t@ EXITシステムコール");
-		emitRI("mov", "r7", 1);   // EXIT のシステムコール番号
+		GlobalVariable v = (GlobalVariable) env.lookup("answer");
+		emitLDC(REG_DST, v.getLabel());  //変数answerの値をr0 (終了コード)に入れる
+		emitLDR("r0", REG_DST, 0);
+		emitRI("mov", "r7", 1);
+		// EXITのシステムコール番号
 		emitI("swi", 0);
 	}
 
@@ -87,7 +127,7 @@ public class Compiler extends CompilerBase {
 		TinyPiSLexer lexer = new TinyPiSLexer(input);
 		CommonTokenStream token = new CommonTokenStream(lexer);
 		TinyPiSParser parser = new TinyPiSParser(token);
-		ParseTree tree = parser.expr();
+		ParseTree tree = parser.prog();
 		ASTGenerator astgen = new ASTGenerator();
 		ASTNode ast = astgen.translate(tree);
 		Compiler compiler = new Compiler();
