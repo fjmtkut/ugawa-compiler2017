@@ -3,8 +3,9 @@ public class ASTNode {}
 //ここから演習３
 class ASTUnaryExprNode extends ASTNode {
 	String op;
-	String operand;
-	ASTUnaryExprNode(String op, String operand) {
+	//String operand;
+	ASTNode operand;
+	ASTUnaryExprNode(String op, ASTNode operand) {
 		this.op = op;
 		this.operand = operand;
 	}

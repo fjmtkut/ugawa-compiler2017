@@ -55,12 +55,7 @@ public class ASTGenerator {
 // ここから演習３
 		} else if (ctxx instanceof NotExprContext) {
 			NotExprContext ctx = (NotExprContext) ctxx;
-			String operand = "";
-			if (ctx.VALUE() != null) {
-				operand = ctx.VALUE().getText();
-			} else if (ctx.IDENTIFIER() != null) {
-				operand = ctx.IDENTIFIER().getText();
-			}
+			ASTNode operand = translateExpr(ctx.unaryExpr());;
 			if (ctx.SUBOP() != null) {
 				return new ASTUnaryExprNode(ctx.SUBOP().getText(), operand);
 			} else if (ctx.NOTOP() != null){

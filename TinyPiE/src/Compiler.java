@@ -35,27 +35,13 @@ public class Compiler extends CompilerBase {
 //ここから演習５
 		} else if (ndx instanceof ASTUnaryExprNode) {
 			ASTUnaryExprNode nd = (ASTUnaryExprNode) ndx;
-			Variable var = env.lookup(nd.operand);
 			if (nd.op.equals("~")) {
-				if (var != null) {
-					GlobalVariable globalVar = (GlobalVariable) var;
-					emitLDC(REG_DST, globalVar.getLabel());
-					emitLDR(REG_DST, REG_DST, 0);
-					emitRR("mvn", REG_DST, REG_DST);
-				} else {
-					emitLDC(REG_DST, Integer.parseInt(nd.operand));
-					emitRR("mvn", REG_DST, REG_DST);
-				}
-			} else if (nd.op.equals("-")) {
-				if (var != null) {
-					GlobalVariable globalVar = (GlobalVariable) var;
-					emitLDC(REG_DST, globalVar.getLabel());
-					emitLDR(REG_DST, REG_DST, 0);
-					emitRR("mvn", REG_DST, REG_DST);
-					emitRRI("add", REG_DST, REG_DST, 1);
-				} else {
-					emitLDC(REG_DST, 0 - Integer.parseInt(nd.operand));
-				}
+				compileExpr(nd.operand, env);
+				emitRR("mvn", REG_DST, REG_DST);
+			} else  {
+				compileExpr(nd.operand, env);
+				emitRR("mvn", REG_DST, REG_DST);
+				emitRRI("add", REG_DST, REG_DST, 1);
 			}
 //ここまで
 		} else if (ndx instanceof ASTNumberNode) {

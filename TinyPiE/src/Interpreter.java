@@ -31,20 +31,13 @@ public class Interpreter extends InterpreterBase {
 				throw new Error("Unknown operator: "+nd.op);
 //ここから演習４
 		} else if (ndx instanceof ASTUnaryExprNode) {
-			int operand;
 			ASTUnaryExprNode nd = (ASTUnaryExprNode) ndx;
-			Variable var = env.lookup(nd.operand);
-			if (var != null) {
-				operand = var.get();
-			} else {
-				operand = Integer.parseInt(nd.operand);
-			}
+			int operand = evalExpr(nd.operand, env);
 			if (nd.op.equals("~")) {
 				return ~ operand;
-			} else if (nd.op.equals("-")) {			
+			} else {			
 				return - operand;
 			}
-			throw new Error("Undefined variable: "+nd.op+nd.operand);
 //ここまで
 		} else if (ndx instanceof ASTNumberNode) {
 			ASTNumberNode nd = (ASTNumberNode) ndx;
