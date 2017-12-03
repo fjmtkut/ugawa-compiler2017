@@ -4,7 +4,7 @@ grammar TinyPiE;
 expr: orExpr
       ;
 
-orExpr:	orExpr OROP andExpr
+orExpr: orExpr OROP andExpr
 	| andExpr
 	;
 
@@ -13,17 +13,16 @@ andExpr: andExpr ANDOP addExpr
 	;
 
 addExpr: addExpr (ADDOP|SUBOP) mulExpr
-	| addExpr SUBOP mulExpr
 	| mulExpr
 	;
 
 mulExpr: mulExpr MULOP unaryExpr
 	| unaryExpr
 	;
-
-unaryExpr: (NOTOP|SUBOP) (VALUE|IDENTIFIER)	# notExpr
-	| VALUE				# literalExpr
-	| IDENTIFIER			# varExpr
+	
+unaryExpr: (NOTOP|SUBOP) unaryExpr	# notExpr
+	|VALUE						# literalExpr
+	| IDENTIFIER				# varExpr
 	| '(' expr ')'			# parenExpr
 	;
 SUBOP: '-';
