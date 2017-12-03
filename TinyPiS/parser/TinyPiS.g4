@@ -45,6 +45,6 @@ ANDOP: '&';
 OROP:	'|';
 NOTOP:	'~';
 
-IDENTIFIER: '_'[a-zA-Z0-9_]*|[a-zA-Z][a-zA-Z0-9_]*|'answer';
+IDENTIFIER: '_'[a-zA-Z0-9_]*|[a-zA-Z][a-zA-Z0-9_]*;
 VALUE: [1-9][0-9]*|[0];
 WS: [ \t\r\n] -> skip;
