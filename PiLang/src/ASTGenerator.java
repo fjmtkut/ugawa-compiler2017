@@ -18,6 +18,10 @@ import parser.PiLangParser.ReturnStmtContext;
 import parser.PiLangParser.StmtContext;
 import parser.PiLangParser.VarExprContext;
 import parser.PiLangParser.WhileStmtContext;
+import parser.PiLangParser.AndExprContext;
+import parser.PiLangParser.NotExprContext;
+import parser.PiLangParser.OrExprContext;
+import parser.PiLangParser.PrintStmtContext;
 
 public class ASTGenerator {	
 	ASTFunctionNode translateFuncDecl(FuncDeclContext ctx) {
@@ -78,18 +82,42 @@ public class ASTGenerator {
 			ASTNode cond = translate(ctx.expr());
 			ASTNode stmt = translate(ctx.stmt());
 			return new ASTWhileStmtNode(cond, stmt);
-	        } else if (ctxx instanceof ReturnStmtContext) {
-			throw new Error("ASTGenerator.java を修正して ReturnStmtContext の変換を実装してください");
+		} else if (ctxx instanceof PrintStmtContext) {
+				PrintStmtContext ctx = (PrintStmtContext) ctxx;
+				ASTNode expr = translate(ctx.expr());
+				return new ASTPrintStmtNode(expr);
+	    } else if (ctxx instanceof ReturnStmtContext) {
+//ここから演習１７
+			ReturnStmtContext ctx = (ReturnStmtContext) ctxx;
+			ASTNode expr = translate(ctx.expr());
+			return new ASTReturnStmtNode(expr);
 		} else if (ctxx instanceof ExprContext) {
 			ExprContext ctx = (ExprContext) ctxx;
-			return translate(ctx.addExpr());
+			return translate(ctx.orExpr());
+		} else if (ctxx instanceof OrExprContext) {
+			OrExprContext ctx = (OrExprContext) ctxx;
+			if (ctx.orExpr() == null)
+				return translate(ctx.andExpr());
+			ASTNode lhs = translate(ctx.orExpr());
+			ASTNode rhs = translate(ctx.andExpr());
+			return new ASTBinaryExprNode(ctx.OROP().getText(), lhs, rhs);
+		} else if (ctxx instanceof AndExprContext) {
+			AndExprContext ctx = (AndExprContext) ctxx;
+			if (ctx.andExpr() == null)
+				return translate(ctx.addExpr());
+			ASTNode lhs = translate(ctx.andExpr());
+			ASTNode rhs = translate(ctx.addExpr());
+			return new ASTBinaryExprNode(ctx.ANDOP().getText(), lhs, rhs);
 		} else if (ctxx instanceof AddExprContext) {
 			AddExprContext ctx = (AddExprContext) ctxx;
 			if (ctx.addExpr() == null)
 				return translate(ctx.mulExpr());
 			ASTNode lhs = translate(ctx.addExpr());
 			ASTNode rhs = translate(ctx.mulExpr());
-			return new ASTBinaryExprNode(ctx.ADDOP().getText(), lhs, rhs);
+			if (ctx.ADDOP() != null)
+				return new ASTBinaryExprNode(ctx.ADDOP().getText(), lhs, rhs);
+			else if (ctx.SUBOP() != null)
+				return new ASTBinaryExprNode(ctx.SUBOP().getText(), lhs, rhs);
 		} else if (ctxx instanceof MulExprContext) {
 			MulExprContext ctx = (MulExprContext) ctxx;
 			if (ctx.mulExpr() == null)
@@ -97,6 +125,14 @@ public class ASTGenerator {
 			ASTNode lhs = translate(ctx.mulExpr());
 			ASTNode rhs = translate(ctx.unaryExpr());
 			return new ASTBinaryExprNode(ctx.MULOP().getText(), lhs, rhs);
+		} else if (ctxx instanceof NotExprContext) {
+			NotExprContext ctx = (NotExprContext) ctxx;
+			ASTNode operand = translate(ctx.unaryExpr());;
+			if (ctx.SUBOP() != null) {
+				return new ASTUnaryExprNode(ctx.SUBOP().getText(), operand);
+			} else if (ctx.NOTOP() != null){
+				return new ASTUnaryExprNode(ctx.NOTOP().getText(), operand);
+			}
 		} else if (ctxx instanceof LiteralExprContext) {
 			LiteralExprContext ctx = (LiteralExprContext) ctxx;
 			int value = Integer.parseInt(ctx.VALUE().getText());
