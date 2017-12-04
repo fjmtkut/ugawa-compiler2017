@@ -18,13 +18,22 @@ stmt: '{' stmt* '}'							# compoundStmt
 	| IDENTIFIER '=' expr ';'				# assignStmt
 	| 'if' '(' expr ')' stmt 'else' stmt	# ifStmt
 	| 'while' '(' expr ')' stmt				# whileStmt
+	| 'print' expr ';'						# printStmt
 	| 'return' expr ';'						# returnStmt
 	;
 
-expr: addExpr
+expr: orExpr
       ;
 
-addExpr: addExpr ADDOP mulExpr
+orExpr: orExpr OROP andExpr
+	| andExpr
+	;
+	
+andExpr: andExpr ANDOP addExpr
+	| addExpr
+	;
+
+addExpr: addExpr (ADDOP|SUBOP) mulExpr
 	| mulExpr
 	;
 
@@ -32,7 +41,8 @@ mulExpr: mulExpr MULOP unaryExpr
 	| unaryExpr
 	;
 
-unaryExpr: VALUE			# literalExpr
+unaryExpr: (NOTOP|SUBOP) unaryExpr	# notExpr
+	| VALUE			# literalExpr
 	| IDENTIFIER			# varExpr
 	| '(' expr ')'			# parenExpr
 	| IDENTIFIER '(' args ')' # callExpr
@@ -42,8 +52,12 @@ args: /* no arguments */
 	| expr ( ',' expr )*
 	;
 
-ADDOP: '+'|'-';
+ADDOP: '+';
+SUBOP: '-';
 MULOP: '*'|'/';
+ANDOP: '&';
+OROP:	'|';
+NOTOP:	'~';
 
 IDENTIFIER: '_'[a-zA-Z0-9_]*|[a-zA-Z][a-zA-Z0-9_]*;
 VALUE: [1-9][0-9]*|[0];
