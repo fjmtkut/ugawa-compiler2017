@@ -93,10 +93,10 @@ public class Compiler extends CompilerBase {
 		} else if (ndx instanceof ASTWhileStmtNode) {
 //ここから
 			ASTWhileStmtNode nd = (ASTWhileStmtNode) ndx;
-			compileExpr(nd.cond, env);
 			String loop = freshLabel();
 			String endloop = freshLabel();
 			emitLabel(loop);
+			compileExpr(nd.cond, env);
 			emitRI("cmp", REG_DST, 0);
 			emitJMP("beq", endloop);
 			compileStmt(nd.stmt, env);
